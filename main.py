@@ -7,8 +7,8 @@ import data
 file_list_vk = []
 path_list_vk = []
 exception_files = []
-list_2x_db = [data.file_path_db, data.file_path_db]
-list_nx = [data.file_path_importNX, data.file_path_NXPOWER, data.file_path_NXSIGNAL]
+path_list_nx = [data.file_path_importNX, data.file_path_NXPOWER, data.file_path_NXSIGNAL]
+path_db_2x = [data.file_path_db, data.file_path_db]
 
 
 def name_and_path_vk(i):
@@ -21,8 +21,8 @@ def name_and_path_vk(i):
                 path_list_vk.append(os.path.join(root, file))
 
     if len(file_list_vk) > 0:
-        print(f'В папке с проектом найдено {len(file_list_vk)} файлов для обновления')
-        answer = dialog_yes_no('Вывести список файлов для обновления?\nВведите Y или N')
+        print(f'В папке с проектом найдено {len(file_list_vk)} файлов ВК для обновления')
+        answer = dialog_yes_no('Вывести список файлов ВК для обновления?\nВведите Y или N')
         if answer == 'y':
             print_list(file_list_vk)
             print('_' * 100)
@@ -35,34 +35,51 @@ def name_and_path_vk(i):
 
 
 def refresh_files(i, list_name, visible=False):
-    excel = win32com.client.DispatchEx("Excel.Application")
-    counter = 1
-    for j in i:
-        file_check(j)
-        print("Обновление файла", counter, "в списке")
-        print(j)
-        wb = excel.Workbooks.Open(j)
-        wb.Application.DisplayAlerts = False
-        wb.Application.EnableEvents = False
-        wb.Application.ScreenUpdating = False
-        wb.Application.Interactive = False
-        excel.Visible = visible
-        wb.RefreshAll()
-        excel.CalculateUntilAsyncQueriesDone()
-        wb.Save()
-        wb.Close()
-        excel.Quit()
-        counter += 1
-        print('Файл', counter - 1, 'отработан')
-    print(f'Отработано {len(i)} файлов в списке =={list_name}==')
-    print(f'{len(exception_files)} файлов из списка =={list_name}== исключены из обновления:')
-    print_list(exception_files)
+    if list_name != 'Файл БД':
+        check_double(i, list_name)
+    else:
+        pass
+    print(f'Файлы =={list_name}== готовы к обновлению')
+    user_answer = dialog_yes_no('Обновить файлы?\nВведите Y или N')
 
-    exception_files.clear()
+    if user_answer == 'y':
+        excel = win32com.client.DispatchEx("Excel.Application")
+        counter = 1
+        for j in i:
+            file_check(j)
+            print(f'Обновление файла {counter} =={list_name}==')
+            print(j)
+            wb = excel.Workbooks.Open(j)
+            wb.Application.DisplayAlerts = visible
+            wb.Application.EnableEvents = visible
+            wb.Application.ScreenUpdating = visible
+            wb.Application.Interactive = visible
+            excel.Visible = visible
+            wb.RefreshAll()
+            excel.CalculateUntilAsyncQueriesDone()
+            time.sleep(1)
+            wb.Save()
+            wb.Close()
+            excel.Quit()
+            counter += 1
+            print('Файл', counter - 1, 'отработан')
+        print(f'Отработано {len(i)} файлов в списке =={list_name}==')
+        print(f'{len(exception_files)} файлов из списка =={list_name}== исключены из обновления:')
+        print_list(exception_files)
+        exception_files.clear()
+        print('_' * 100)
+    else:
+        print('_' * 100)
+        print('Выполнение приложения прервано пользователем')
+        endTime = time.time()
+        totalTime = endTime - startTime
+        print('Работа завершена')
+        print(input(f'Затраченное время = {int(totalTime)} секунд\n'))
+        sys.exit()
 
 
-def check_double(i):
-    print('Проверка файлов на файлов...')
+def check_double(i, list_name):
+    print(f'Проверка файлов =={list_name}== на дубли...')
     visited = set()
     dup = [x for x in i if x in visited or (visited.add(x) or False)]
     if len(dup) > 0:
@@ -117,34 +134,19 @@ def print_list(i):
 
 if __name__ == '__main__':
     startTime = time.time()
-    # refresh_files(data.list_2x_db, True)
-    name_and_path_vk(data.path_folder)
-    check_double(path_list_vk)
+    # name_and_path_vk(data.path_folder)
+    # refresh_files(path_db_2x, 'Файл БД', True)
 
-    # print('Файлы готовы к обновлению')
-    # user_answer = dialog_yes_no('Обновить файлы?\nВведите Y или N')
-    #
-    # if user_answer == 'y':
-    #     refresh_files(path_list_vk, 'Файлы ВК', False)
-    # else:
-    #     print('_' * 100)
-    #     print('Выполнение приложения прервано пользователем')
-    #     endTime = time.time()
-    #     totalTime = endTime - startTime
-    #     print('Работа завершена')
-    #     print(input(f'Затраченное время = {int(totalTime)} секунд\n'))
-    #     sys.exit()
+    # refresh_files(path_list_vk, 'Файлы ВК')
 
-    print('_' * 100)
-    print('Обновление файлов взаимодействия с NX')
-    refresh_files(list_nx, 'Файлы NX', False)
-    print('_' * 100)
+    refresh_files(path_list_nx, 'Файлы NX', False)
 
-    # refresh_files(data.list_2x_db, 'Файлы БД', True)
+    # refresh_files(path_db_2x, 'Файл БД', True)
+
 
     endTime = time.time()
     totalTime = endTime - startTime
     print('Программа завершена')
-    print(input(f'Затраченное время = {int(totalTime)} секунд\n.Нажмите Enter'))
+    print(input(f'Затраченное время = {int(totalTime)} секунд\nНажмите Enter'))
     sys.exit()
 
