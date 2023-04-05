@@ -7,6 +7,8 @@ import data
 file_list_vk = []
 path_list_vk = []
 exception_files = []
+list_2x_db = [data.file_path_db, data.file_path_db]
+list_nx = [data.file_path_importNX, data.file_path_NXPOWER, data.file_path_NXSIGNAL]
 
 
 def name_and_path_vk(i):
@@ -32,27 +34,7 @@ def name_and_path_vk(i):
     return file_list_vk, path_list_vk
 
 
-# def refresh_2x_db(i):
-#     excel = win32com.client.DispatchEx("Excel.Application")
-#     file_check(i)
-#     print("Обновление файла базы данных")
-#     wb = excel.Workbooks.Open(i)
-#     # time.sleep(1)
-#     wb.Application.DisplayAlerts = False
-#     wb.Application.EnableEvents = False
-#     wb.Application.ScreenUpdating = False
-#     wb.Application.Interactive = False
-#     excel.Visible = True
-#     wb.RefreshAll()
-#     excel.CalculateUntilAsyncQueriesDone()
-#     time.sleep(1)
-#     wb.Save()
-#     wb.Close()
-#     excel.Quit()
-#     print('Файл базы данных обновлен')
-
-
-def refresh_files(i, visible=False):
+def refresh_files(i, list_name, visible=False):
     excel = win32com.client.DispatchEx("Excel.Application")
     counter = 1
     for j in i:
@@ -60,7 +42,6 @@ def refresh_files(i, visible=False):
         print("Обновление файла", counter, "в списке")
         print(j)
         wb = excel.Workbooks.Open(j)
-        # time.sleep(1)
         wb.Application.DisplayAlerts = False
         wb.Application.EnableEvents = False
         wb.Application.ScreenUpdating = False
@@ -68,17 +49,16 @@ def refresh_files(i, visible=False):
         excel.Visible = visible
         wb.RefreshAll()
         excel.CalculateUntilAsyncQueriesDone()
-        # time.sleep(1)
         wb.Save()
         wb.Close()
         excel.Quit()
         counter += 1
         print('Файл', counter - 1, 'отработан')
-    print(f'Отработано {len(path_list_vk)} файлов в списке')
-    print(f'{len(exception_files)} исключены из обновления')
-    print('Список исключенных файлов:')
-    for i in exception_files:
-        print(i)
+    print(f'Отработано {len(i)} файлов в списке =={list_name}==')
+    print(f'{len(exception_files)} файлов из списка =={list_name}== исключены из обновления:')
+    print_list(exception_files)
+
+    exception_files.clear()
 
 
 def check_double(i):
@@ -93,25 +73,6 @@ def check_double(i):
     else:
         print('Проверка завершена. Дублей файлов не найдено.')
         print('_' * 100)
-
-
-def check_open_files(i):
-    print('Проверка на открытые файлы...')
-    list_open = []
-    for root, dirs, files in os.walk(data.path_folder):
-        for file in files:
-            if file.endswith('ВК.xlsx') and '~$' in file \
-                    or file.endswith('ВК.xls') and '~$' in file \
-                    or file.endswith('ВК.xlsm') and '~$' in file:
-                list_open.append(os.path.join(file))
-    if len(list_open) > 0:
-        print('Закройте файл(ы)...:')
-        print_list(list_open)
-        print(input('После закрытия файла(ов) введите Enter.\n'))
-    for j in i:
-        file_check(j)
-    print('Проверка завершена. Открытых файлов не найдено.')
-    print('_' * 100)
 
 
 def file_check(file):
@@ -158,33 +119,32 @@ if __name__ == '__main__':
     startTime = time.time()
     # refresh_files(data.list_2x_db, True)
     name_and_path_vk(data.path_folder)
-    # check_double(path_list_vk)
-    # check_open_files(path_list_vk)
-    print('Файлы готовы к обновлению')
-    user_answer = dialog_yes_no('Обновить файлы?\nВведите Y или N')
+    check_double(path_list_vk)
 
-    if user_answer == 'y':
-        refresh_files(path_list_vk, False)
-    else:
-        print('_' * 100)
-        print('Выполнение приложения прервано пользователем')
-        endTime = time.time()
-        totalTime = endTime - startTime
-        print('Работа завершена')
-        print(input(f'Затраченное время = {int(totalTime)} секунд\n'))
-        sys.exit()
+    # print('Файлы готовы к обновлению')
+    # user_answer = dialog_yes_no('Обновить файлы?\nВведите Y или N')
+    #
+    # if user_answer == 'y':
+    #     refresh_files(path_list_vk, 'Файлы ВК', False)
+    # else:
+    #     print('_' * 100)
+    #     print('Выполнение приложения прервано пользователем')
+    #     endTime = time.time()
+    #     totalTime = endTime - startTime
+    #     print('Работа завершена')
+    #     print(input(f'Затраченное время = {int(totalTime)} секунд\n'))
+    #     sys.exit()
 
     print('_' * 100)
     print('Обновление файлов взаимодействия с NX')
-    refresh_files(data.NX_list, False)
-    print(f'Обновлено {len(data.NX_list)} файлов в списке')
+    refresh_files(list_nx, 'Файлы NX', False)
     print('_' * 100)
 
-    # refresh_files(data.list_2x_db, True)
+    # refresh_files(data.list_2x_db, 'Файлы БД', True)
 
     endTime = time.time()
     totalTime = endTime - startTime
     print('Программа завершена')
-    print(input(f'Затраченное время = {int(totalTime)} секунд\n'))
+    print(input(f'Затраченное время = {int(totalTime)} секунд\n.Нажмите Enter'))
     sys.exit()
 
