@@ -61,8 +61,8 @@ def refresh_files(i, list_name, visible=False):
             wb.Save()
             wb.Close()
             excel.Quit()
+            print('Файл', counter, 'отработан')
             counter += 1
-            print('Файл', counter - 1, 'отработан')
         print(f'Отработано {len(i)} файлов в списке =={list_name}==')
         print(f'{len(exception_files)} файлов из списка =={list_name}== исключены из обновления:')
         print_list(exception_files)
@@ -100,6 +100,7 @@ def file_check(file):
                 os.rename(file, file)
                 valid = True
             except IOError:
+                valid_flag = False
                 print(f'Файл {file} открыт')
                 answer = dialog_yes_no('Исключить этот файл из обновления?\nВведите Y или N')
                 if answer == 'y':
@@ -134,15 +135,14 @@ def print_list(i):
 
 if __name__ == '__main__':
     startTime = time.time()
-    # name_and_path_vk(data.path_folder)
-    # refresh_files(path_db_2x, 'Файл БД', True)
+    name_and_path_vk(data.path_folder)
+    refresh_files(path_db_2x, 'Файл БД', True)
 
-    # refresh_files(path_list_vk, 'Файлы ВК')
+    refresh_files(path_list_vk, 'Файлы ВК')
 
     refresh_files(path_list_nx, 'Файлы NX', False)
 
-    # refresh_files(path_db_2x, 'Файл БД', True)
-
+    refresh_files(path_db_2x, 'Файл БД', True)
 
     endTime = time.time()
     totalTime = endTime - startTime
