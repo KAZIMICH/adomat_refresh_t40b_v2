@@ -11,6 +11,10 @@ path_list_nx = [data.file_path_importNX, data.file_path_NXPOWER, data.file_path_
 path_db_2x = [data.file_path_db, data.file_path_db]
 
 
+''' Для корректной работы приложения необходимо, чтобы во всех файлах экселя
+    для всех запросов была снята галочка "фоновое обновление" '''
+
+
 def name_and_path_vk(i):
     for root, dirs, files in os.walk(i):
         for file in files:
